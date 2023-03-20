@@ -37,3 +37,17 @@ docker run -it \
   -e DNS_RECORD=dyn.example.org. \
   foosinn/webhook-rfc2136
 ```
+
+## fritzbox
+
+* Internet -> Freigaben
+* Reiter: DynDNS
+* [x] DynDNS benutzen
+
+Werte:
+
+* DynDNS-Anbieter: Benutzerdefiniert
+* Update-URL: https://rfc2136.example.org/update?token=<username>&v4=<ipaddr>&v6=<ip6addr>
+* Domainname: does-not-matter
+* Benutzername: <webhook-secret>
+* Kennwort: does-not-matter
