@@ -35,7 +35,7 @@ docker run -it \
   -e DNS_KEY_SECRET="<dyn-key-secret>" \
   -e TOKEN="<webhook-secret>" \
   -e DNS_RECORD=dyn.example.org. \
-  foosinn/webhook-rfc2136
+  ghcr.io/foosinn/webhook-rfc2136:main
 ```
 
 ## fritzbox
