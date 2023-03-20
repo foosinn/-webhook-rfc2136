@@ -38,7 +38,7 @@ func main() {
 	}
 }
 
-func (a *App) handler (w http.ResponseWriter, r *http.Request) {
+func (a *App) handler(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 
 	token := query.Get("token")
@@ -50,7 +50,7 @@ func (a *App) handler (w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "no :(")
 		return
 	}
-	if v4 == nil || v6 == nil {
+	if v4 == nil {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "no :(")
 		return
@@ -73,21 +73,31 @@ func (a *App) dnsUpdate(v4, v6 net.IP) error {
 	// dns key name as fqdn
 	key := dns.Fqdn(a.DNSKeyName)
 
+	// remove records (always includes v6)
+	delRra, _ := dns.NewRR(fmt.Sprintf("%s IN A 127.0.0.1", a.DNSRecord))
+	delRraaaa, _ := dns.NewRR(fmt.Sprintf("%s IN AAAA ::1", a.DNSRecord))
+	delRrs := []dns.RR{delRra, delRraaaa}
+
 	// create records
 	rra := &dns.A{
 		Hdr: dns.RR_Header{Name: a.DNSRecord, Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: 300},
 		A:   v4,
 	}
-	rraaaa := &dns.AAAA{
-		Hdr:  dns.RR_Header{Name: a.DNSRecord, Rrtype: dns.TypeAAAA, Class: dns.ClassINET, Ttl: 300},
-		AAAA: v6,
+	rrs := []dns.RR{rra}
+
+	// only v6 if set
+	if v6 != nil {
+		rraaaa := &dns.AAAA{
+			Hdr:  dns.RR_Header{Name: a.DNSRecord, Rrtype: dns.TypeAAAA, Class: dns.ClassINET, Ttl: 300},
+			AAAA: v6,
+		}
+		rrs = []dns.RR{rra, rraaaa}
 	}
-	rrs := []dns.RR{rra, rraaaa}
 
 	// create message
 	m := new(dns.Msg)
 	m.SetUpdate(a.DNSZone)
-	m.RemoveRRset(rrs)
+	m.RemoveRRset(delRrs)
 	m.Insert(rrs)
 	m.SetTsig(key, a.DNSKeyAlgo, 300, time.Now().Unix())
 
