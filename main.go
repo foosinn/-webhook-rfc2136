@@ -64,6 +64,8 @@ func (a *App) handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Printf("updated to v4:%s v6:%s", v4, v6)
+
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "updated")
 
